@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using DtoClassGeneratorLibrary;
 
 namespace DtoClassGeneratorIOModule
 {

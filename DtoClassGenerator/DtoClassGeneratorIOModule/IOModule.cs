@@ -52,6 +52,8 @@ namespace DtoClassGeneratorIOModule
                 case "run":
                     RunClassGenerator();
                     break;
+                case "":
+                    break;
                 default:
                     Console.WriteLine("Unknown command: {0}", command);
                     break;
@@ -65,6 +67,7 @@ namespace DtoClassGeneratorIOModule
         {
             string inputFileContents = ReadFile();
             ClassDescription[] classes = JsonParser.Parse(inputFileContents);
+            classGenerator.Generate(classes);
         }
 
         private string ReadFile()
