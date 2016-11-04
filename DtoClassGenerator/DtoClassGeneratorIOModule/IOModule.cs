@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using DtoClassGeneratorLibrary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,10 +8,11 @@ using System.Threading.Tasks;
 
 namespace DtoClassGeneratorIOModule
 {
-    class IOModule
+    internal class IOModule
     {
         private string inputFilePath;
         private string outputDirectoryPath;
+        private DtoClassGenerator classGenerator = new DtoClassGenerator();
 
         internal IOModule()
         {
@@ -48,7 +50,7 @@ namespace DtoClassGeneratorIOModule
                     SetOutputDirectoryPath(inputString);
                     break;
                 case "run":
-                    ReadFile();
+                    RunClassGenerator();
                     break;
                 default:
                     Console.WriteLine("Unknown command: {0}", command);
@@ -59,10 +61,15 @@ namespace DtoClassGeneratorIOModule
 
 
 
-
-        private string[] ReadFile()
+        private void RunClassGenerator()
         {
-            string[] lines = System.IO.File.ReadAllLines(inputFilePath);
+            string inputFileContents = ReadFile();
+            ClassDescription[] classes = JsonParser.Parse(inputFileContents);
+        }
+
+        private string ReadFile()
+        {
+            string lines = System.IO.File.ReadAllText(inputFilePath);
             return lines;
         }
 
