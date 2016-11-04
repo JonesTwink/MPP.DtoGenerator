@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Microsoft.CodeAnalysis;
 using DtoClassGeneratorLibrary;
 using System.Collections.Generic;
 using System.Linq;
