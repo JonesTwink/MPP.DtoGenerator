@@ -73,7 +73,16 @@ namespace DtoClassGeneratorIOModule
 
         private string ReadFile()
         {
-            string lines = System.IO.File.ReadAllText(inputFilePath);
+            string lines;
+            try
+            {
+                lines = System.IO.File.ReadAllText(inputFilePath);
+            }
+            catch
+            {
+                throw new IOModuleException("An error occured while reading from input file. Check your input file path.");
+            }
+
             return lines;
         }
 

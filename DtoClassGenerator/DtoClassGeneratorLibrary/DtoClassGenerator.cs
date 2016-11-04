@@ -1,12 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.Formatting;
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 namespace DtoClassGeneratorLibrary
 {
     public class DtoClassGenerator
@@ -24,9 +23,11 @@ namespace DtoClassGeneratorLibrary
             var generator = SyntaxGenerator.GetGenerator(workspace, LanguageNames.CSharp);
             foreach (SyntaxNode generatedClass in generatedClasses)
             {
-                var newNode = generator.CompilationUnit(generatedClass).NormalizeWhitespace();
+                var newNode = generator.CompilationUnit(generatedClass);
+                newNode = Formatter.Format(newNode, workspace);
                 Console.WriteLine(newNode.ToString());
             }
+            
             return "";
         }
 
@@ -53,24 +54,19 @@ namespace DtoClassGeneratorLibrary
             {
                 generatedProperties.Add(GenerateProperty(classProperty));
             }
-            return new List<SyntaxNode>();
+            return generatedProperties;
         }
 
         public SyntaxNode GenerateProperty(PropertyDescription propertyDescription)
         {
-            AdhocWorkspace workspace = new AdhocWorkspace();
-            var generator = SyntaxGenerator.GetGenerator(workspace, LanguageNames.CSharp);
-
-            var generatedProperty = generator.PropertyDeclaration(propertyDescription.Name,
-                                                                      generator.TypeExpression(SpecialType.System_String), Accessibility.Public,
-                                                                      getAccessorStatements: new SyntaxNode[]
-                                                                      { generator.ReturnStatement(generator.IdentifierName(propertyDescription.Name)) },
-                                                                      setAccessorStatements: new SyntaxNode[]
-                                                                      { generator.AssignmentStatement(generator.IdentifierName(propertyDescription.Name),
-                                                                      generator.IdentifierName("value"))}
-                                                                  );
+            var generatedProperty = PropertyDeclaration(IdentifierName(propertyDescription.Format), propertyDescription.Name)
+                                    .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
+                                    .WithAccessorList(AccessorList(List( new[] { AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+                                                                                 AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)) })));
 
             return generatedProperty;
         }
+     
+      
     }
 }
