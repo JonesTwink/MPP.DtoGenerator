@@ -122,14 +122,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClassDescriptionArray.cs" />
+    <Compile Include="ConsoleUserMessageLogger.cs" />
     <Compile Include="IOModule.cs" />
     <Compile Include="IOModuleException.cs" />
+    <Compile Include="IUserMessageLogger.cs" />
     <Compile Include="JsonParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="DtoClassGeneratorSettings.config" />
     <None Include="packages.config" />
   </ItemGroup>

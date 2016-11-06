@@ -15,9 +15,12 @@ namespace DtoClassGeneratorLibrary
     public class DtoClassGenerator
     {
         private string generatedClassNamespace;
+        private IDebugLogger consoleWriter = new ConsoleDebugLogger();
         private List<GeneratedClass> generatedClasses;
         private SupportedTypes supportedTypes = new SupportedTypes();
+
         private object SyncObj = new object();
+
         public DtoClassGenerator()
         {
             int maxThreadCount = 0;
@@ -44,8 +47,11 @@ namespace DtoClassGeneratorLibrary
         public List<GeneratedClass> Generate(ClassDescription[] classes)
         {
             generatedClasses = new List<GeneratedClass>();
-
-            PrintDebugInfo();            
+            lock (SyncObj)
+            {
+                consoleWriter.PrintDebugInfo();
+            }
+                    
             LaunchClassGenerationThreads(classes);
             
             return generatedClasses;
@@ -75,7 +81,11 @@ namespace DtoClassGeneratorLibrary
 
         private void GenerateClass(object classDescriptionObj)
         {
-            PrintDebugInfo(true);
+            lock (SyncObj)
+            {
+                consoleWriter.PrintDebugInfo(true);
+            }
+            
             ClassDescription classDescription = (ClassDescription)classDescriptionObj;
             AdhocWorkspace workspace = new AdhocWorkspace();
             var generator = SyntaxGenerator.GetGenerator(workspace, LanguageNames.CSharp);
@@ -138,29 +148,6 @@ namespace DtoClassGeneratorLibrary
             }
         }
 
-        private void PrintDebugInfo(bool isThreadPool = false)
-        {
-            
-            lock (SyncObj)
-            {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-
-                if (!isThreadPool)
-                {
-                    int nWorkerThreads;
-                    int nCompletionThreads;
-                    ThreadPool.GetMaxThreads(out nWorkerThreads, out nCompletionThreads);
-                    Console.WriteLine("Total amount of threads available: {0}\nThe amount of IO-threads available: {1}", nWorkerThreads, nCompletionThreads);
-
-                    Console.WriteLine("Main thread. Is pool thread: {0}, Thread #: {1}", Thread.CurrentThread.IsThreadPoolThread, Thread.CurrentThread.GetHashCode());
-                }
-                else
-                {
-                    Console.WriteLine("Worker thread. Is pool thread: {0}, Thread #: {1}", Thread.CurrentThread.IsThreadPoolThread, Thread.CurrentThread.GetHashCode());
-                }
-                Console.ResetColor();
-            }
-
-        }      
+      
     }
 }

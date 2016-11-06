@@ -14,6 +14,7 @@ namespace DtoClassGeneratorIOModule
         private string inputFilePath;
         private string outputDirectoryPath;
         private DtoClassGenerator classGenerator = new DtoClassGenerator();
+        private IUserMessageLogger messageWriter = new ConsoleUserMessageLogger(); 
 
         internal IOModule()
         {
@@ -23,9 +24,8 @@ namespace DtoClassGeneratorIOModule
 
         internal void Listen()
         {
-            Console.WriteLine("Input file: {0}", inputFilePath);
-            Console.WriteLine("Output directory: {0}", outputDirectoryPath);
-            Console.WriteLine("Use commands 'input' and 'output' for setting custom input/output paths.");
+            messageWriter.ShowStartupInfo(inputFilePath, outputDirectoryPath);
+
             bool isRunning = true;
 
             while (isRunning)
@@ -37,9 +37,8 @@ namespace DtoClassGeneratorIOModule
                 }
                 catch (IOModuleException ex)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(ex.Message);
-                    Console.ResetColor();
+                    messageWriter.ShowErrorMessage(ex.Message);
+
                 }
             }
         }
@@ -65,7 +64,7 @@ namespace DtoClassGeneratorIOModule
                 case "":
                     break;
                 default:
-                    Console.WriteLine("Unknown command: {0}", command);
+                    messageWriter.ShowMessage(String.Format("Unknown command: {0}", command));
                     break;
             }
             return true;
@@ -99,7 +98,7 @@ namespace DtoClassGeneratorIOModule
                         Directory.CreateDirectory(outputDirectoryPath);
                     }
                     File.WriteAllText(filepath, contents);
-                    PrintWriteFileSuccessMessage(filepath);
+                    messageWriter.PrintWriteFileSuccessMessage(filepath);
                 }
                 catch
                 {
@@ -122,16 +121,7 @@ namespace DtoClassGeneratorIOModule
             return lines;
         }
 
-        private void PrintWriteFileSuccessMessage(string filepath)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write("A new file has been successfully created.\nPath:");
-            Console.BackgroundColor = ConsoleColor.DarkGray;
-            Console.ForegroundColor = ConsoleColor.Black;
-
-            Console.WriteLine( filepath);
-            Console.ResetColor();
-        }
+        
         private string ExtractCommand(string inputString)
         {
             return inputString.IndexOf(' ') > -1 ? inputString.Substring(0, inputString.IndexOf(' ')) : inputString;
@@ -140,13 +130,13 @@ namespace DtoClassGeneratorIOModule
         private void SetInputFilePath(string inputString)
         {
             inputFilePath = inputString.IndexOf(' ') > -1 ? inputString.Substring(inputString.IndexOf(' ')+1, inputString.Length-inputString.IndexOf(' ') - 1) : inputString;
-            Console.WriteLine("New input file path has been set to {0}", inputFilePath);
+            messageWriter.ShowMessage(String.Format("New input file path has been set to {0}", inputFilePath));
         }
 
         private void SetOutputDirectoryPath(string inputString)
         {
             outputDirectoryPath = inputString.IndexOf(' ') > -1 ? inputString.Substring(inputString.IndexOf(' ') + 1, inputString.Length - inputString.IndexOf(' ') - 1) : inputString;
-            Console.WriteLine("New output directory path has been set to {0}", outputDirectoryPath);
+            messageWriter.ShowMessage(String.Format("New output directory path has been set to {0}", outputDirectoryPath));
         }
     }
 }
