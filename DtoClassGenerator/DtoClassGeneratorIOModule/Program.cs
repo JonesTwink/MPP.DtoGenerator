@@ -13,6 +13,7 @@ namespace DtoClassGeneratorIOModule
         {
             IOModule rw = new IOModule();
             rw.Listen();
+
         }
     }
 }

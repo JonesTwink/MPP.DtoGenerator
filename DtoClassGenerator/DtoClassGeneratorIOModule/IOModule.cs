@@ -18,7 +18,7 @@ namespace DtoClassGeneratorIOModule
         internal IOModule()
         {
             inputFilePath = Directory.GetCurrentDirectory() + "\\input.txt";
-            outputDirectoryPath = Directory.GetCurrentDirectory();
+            outputDirectoryPath = Directory.GetCurrentDirectory() + "\\Results";
         }
 
         internal void Listen()
@@ -30,8 +30,17 @@ namespace DtoClassGeneratorIOModule
 
             while (isRunning)
             {
-                string inputString = Console.ReadLine();
-                isRunning = ProcessInput(inputString);
+                try
+                {
+                    string inputString = Console.ReadLine();
+                    isRunning = ProcessInput(inputString);
+                }
+                catch (IOModuleException ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(ex.Message);
+                    Console.ResetColor();
+                }
             }
         }
 
@@ -67,10 +76,37 @@ namespace DtoClassGeneratorIOModule
         private void RunClassGenerator()
         {
             string inputFileContents = ReadFile();
+
             ClassDescription[] classes = JsonParser.Parse(inputFileContents);
-            classGenerator.Generate(classes);
+
+            List<GeneratedClass> generatedClasses = classGenerator.Generate(classes);
+
+            SaveResultsToFile(generatedClasses);
         }
 
+        private void SaveResultsToFile(List<GeneratedClass> generatedClasses)
+        {
+
+            foreach (GeneratedClass generatedClass in generatedClasses)
+            {
+
+                string filepath = outputDirectoryPath + "\\" + generatedClass.Name + ".cs";
+                string contents = generatedClass.Contents;
+                try
+                {
+                    if (!Directory.Exists(outputDirectoryPath))
+                    {
+                        Directory.CreateDirectory(outputDirectoryPath);
+                    }
+                    File.WriteAllText(filepath, contents);
+                    PrintWriteFileSuccessMessage(filepath);
+                }
+                catch
+                {
+                    throw new IOModuleException("An error occured while writing into file. Check your output directory path.");
+                }
+            }
+        }
         private string ReadFile()
         {
             string lines;
@@ -86,6 +122,16 @@ namespace DtoClassGeneratorIOModule
             return lines;
         }
 
+        private void PrintWriteFileSuccessMessage(string filepath)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("A new file has been successfully created.\nPath:");
+            Console.BackgroundColor = ConsoleColor.DarkGray;
+            Console.ForegroundColor = ConsoleColor.Black;
+
+            Console.WriteLine( filepath);
+            Console.ResetColor();
+        }
         private string ExtractCommand(string inputString)
         {
             return inputString.IndexOf(' ') > -1 ? inputString.Substring(0, inputString.IndexOf(' ')) : inputString;
@@ -93,12 +139,14 @@ namespace DtoClassGeneratorIOModule
 
         private void SetInputFilePath(string inputString)
         {
-            string path = inputString.IndexOf(' ') > -1 ? inputString.Substring(inputString.IndexOf(' ')+1, inputString.Length-inputString.IndexOf(' ') - 1) : inputString;
+            inputFilePath = inputString.IndexOf(' ') > -1 ? inputString.Substring(inputString.IndexOf(' ')+1, inputString.Length-inputString.IndexOf(' ') - 1) : inputString;
+            Console.WriteLine("New input file path has been set to {0}", inputFilePath);
         }
 
         private void SetOutputDirectoryPath(string inputString)
         {
-            string path = inputString.IndexOf(' ') > -1 ? inputString.Substring(inputString.IndexOf(' ') + 1, inputString.Length - inputString.IndexOf(' ') - 1) : inputString;
+            outputDirectoryPath = inputString.IndexOf(' ') > -1 ? inputString.Substring(inputString.IndexOf(' ') + 1, inputString.Length - inputString.IndexOf(' ') - 1) : inputString;
+            Console.WriteLine("New output directory path has been set to {0}", outputDirectoryPath);
         }
     }
 }
