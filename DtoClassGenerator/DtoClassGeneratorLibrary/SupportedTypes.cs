@@ -13,7 +13,7 @@ namespace DtoClassGeneratorLibrary
         public string this[string key]
         {
             get
-            {
+            {  
                 return container[key].ToString();
             }
         }

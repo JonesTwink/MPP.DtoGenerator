@@ -96,6 +96,7 @@
     <Compile Include="ClassDescription.cs" />
     <Compile Include="ConsoleDebugLogger.cs" />
     <Compile Include="DtoClassGenerator.cs" />
+    <Compile Include="DtoClassGeneratorLibraryException.cs" />
     <Compile Include="GeneratedClass.cs" />
     <Compile Include="GeneratorSettings.cs" />
     <Compile Include="IDebugLogger.cs" />

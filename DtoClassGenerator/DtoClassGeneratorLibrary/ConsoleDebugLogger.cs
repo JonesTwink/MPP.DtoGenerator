@@ -27,6 +27,12 @@ namespace DtoClassGeneratorLibrary
             Console.ResetColor();
         }
 
-        
+        public void ShowErrorMessage(string message)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ResetColor();
+        }
+
     }
 }

@@ -37,7 +37,6 @@ namespace DtoClassGeneratorLibrary
             {
                 consoleWriter.PrintDebugInfo();
             }
-                    
             LaunchClassGenerationThreads(classes);
             
             return generatedClasses;
@@ -45,9 +44,7 @@ namespace DtoClassGeneratorLibrary
 
         private void LaunchClassGenerationThreads(ClassDescription[] classes)
         {
-            int classAmount = classes.Length;
-
-            
+            int classAmount = classes.Length;            
 
             using (ManualResetEvent waitAllEvent = new ManualResetEvent(false))
             {
@@ -127,7 +124,14 @@ namespace DtoClassGeneratorLibrary
 
             foreach (PropertyDescription classProperty in classProperties)
             {
-                generatedProperties.Add(GenerateProperty(classProperty));
+                try
+                {
+                    generatedProperties.Add(GenerateProperty(classProperty));
+                }
+                catch (DtoClassGeneratorLibraryException ex)
+                {
+                    consoleWriter.ShowErrorMessage(ex.Message);
+                }                
             }
             return generatedProperties;
         }
@@ -135,25 +139,33 @@ namespace DtoClassGeneratorLibrary
         private SyntaxNode GenerateProperty(PropertyDescription propertyDescription)
         {
             object type = Type.GetType(propertyDescription.Format);
-
-            var generatedProperty = PropertyDeclaration(IdentifierName(ConvertType(propertyDescription)), propertyDescription.Name)
-                                    .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
-                                    .WithAccessorList(AccessorList(List( new[] { AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
+            try
+            {
+                var generatedProperty = PropertyDeclaration(IdentifierName(ConvertType(propertyDescription)), propertyDescription.Name)
+                                        .WithModifiers(TokenList(Token(SyntaxKind.PublicKeyword)))
+                                        .WithAccessorList(AccessorList(List(new[] { AccessorDeclaration(SyntaxKind.GetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)),
                                                                                  AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)) })));
-
-            return generatedProperty;
+                return generatedProperty;
+            }
+            catch
+            {
+                throw new DtoClassGeneratorLibraryException(String.Format("Type {0} is  not supported. Check your input file.", propertyDescription.Format));
+            }
+            
+            
         }
 
         private string ConvertType(PropertyDescription propertyDescription)
-        {
-            if (propertyDescription.Type == "boolean")
-            {
-                return supportedTypes["bool"];
-            }
-            else
-            {
-                return supportedTypes[propertyDescription.Format];
-            }
+        {        
+                if (propertyDescription.Type == "boolean")
+                {
+                    return supportedTypes["bool"];
+                }
+                else
+                {
+                    return supportedTypes[propertyDescription.Format];
+                }
+
         }
 
       

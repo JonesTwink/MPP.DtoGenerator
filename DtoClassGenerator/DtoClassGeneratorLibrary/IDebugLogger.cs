@@ -9,5 +9,6 @@ namespace DtoClassGeneratorLibrary
     internal interface IDebugLogger
     {
         void PrintDebugInfo(bool isThreadPool = false);
+        void ShowErrorMessage(string message);
     }
 }

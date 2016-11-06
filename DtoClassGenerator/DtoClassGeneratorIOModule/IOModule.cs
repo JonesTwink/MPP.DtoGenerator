@@ -40,6 +40,11 @@ namespace DtoClassGeneratorIOModule
                     messageWriter.ShowErrorMessage(ex.Message);
 
                 }
+                catch (DtoClassGeneratorLibraryException ex)
+                {
+                    messageWriter.ShowErrorMessage(ex.Message);
+
+                }
             }
         }
 
