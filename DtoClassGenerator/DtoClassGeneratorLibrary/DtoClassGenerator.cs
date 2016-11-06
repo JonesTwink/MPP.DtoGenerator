@@ -26,8 +26,7 @@ namespace DtoClassGeneratorLibrary
         {
             if (settings.MaxThreadsAmount != 0)
             {
-                ThreadPool.SetMinThreads(settings.MaxThreadsAmount, settings.MaxThreadsAmount);
-                ThreadPool.SetMaxThreads(settings.MaxThreadsAmount, settings.MaxThreadsAmount);
+
             }
         }
 
@@ -47,22 +46,44 @@ namespace DtoClassGeneratorLibrary
         private void LaunchClassGenerationThreads(ClassDescription[] classes)
         {
             int classAmount = classes.Length;
-            bool isTheInitialStateSignaling = false;
 
-            using (ManualResetEvent resetEvent = new ManualResetEvent(isTheInitialStateSignaling))
+            
+
+            using (ManualResetEvent waitAllEvent = new ManualResetEvent(false))
             {
+                int taskAmount = settings.MaxThreadsAmount;
+                ManualResetEvent freeThreadEvent = new ManualResetEvent(true);                    
                 foreach (ClassDescription classDescription in classes)
                 {
-
-                    ThreadPool.QueueUserWorkItem(
-                        new WaitCallback(x => {
+                    freeThreadEvent.WaitOne();
+                    if (taskAmount > 0)
+                    {
+                        taskAmount--;
+                        ThreadPool.QueueUserWorkItem(
+                        new WaitCallback(x =>
+                        {
                             GenerateClass(x);
                             if (Interlocked.Decrement(ref classAmount) == 0)
-                                resetEvent.Set();
+                            {
+                                waitAllEvent.Set();
+                            }
+
+                            if (Interlocked.Increment(ref taskAmount) == 1)
+                            {
+                                freeThreadEvent.Set();
+                            }
+                               
                         }),
                         classDescription);
+                        if (taskAmount == 0)
+                            freeThreadEvent.Reset();
+                    }
+                        
                 }
-                resetEvent.WaitOne();
+                
+
+                waitAllEvent.WaitOne();
+                freeThreadEvent.Close();
             }
         }
 

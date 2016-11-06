@@ -11,8 +11,15 @@ namespace DtoClassGeneratorLibrary
         public int MaxThreadsAmount
         {
             get
-            {                
-                return _maxThreadsAmount;
+            {
+                if (_maxThreadsAmount == 0)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return _maxThreadsAmount;
+                }
             }
             set
             {

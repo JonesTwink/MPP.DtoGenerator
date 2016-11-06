@@ -16,8 +16,8 @@ namespace DtoClassGeneratorLibrary
                 int nWorkerThreads;
                 int nCompletionThreads;
                 ThreadPool.GetMaxThreads(out nWorkerThreads, out nCompletionThreads);
-                Console.WriteLine("Total amount of threads available: {0}\nThe amount of IO-threads available: {1}", nWorkerThreads, nCompletionThreads);
-
+                Console.WriteLine("Max amount of threads worker threads available: {0}\n Max amount of IO-threads available: {1}", nWorkerThreads, nCompletionThreads);
+                Console.WriteLine("Thread-pool task limit: {0}", (new GeneratorSettings()).MaxThreadsAmount);
                 Console.WriteLine("Main thread. Is pool thread: {0}, Thread #: {1}", Thread.CurrentThread.IsThreadPoolThread, Thread.CurrentThread.GetHashCode());
             }
             else
