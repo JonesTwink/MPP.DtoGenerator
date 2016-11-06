@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Configuration;
+
 using System.ComponentModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,8 +14,9 @@ namespace DtoClassGeneratorLibrary
 {
     public class DtoClassGenerator
     {
-        private string generatedClassNamespace;
         private IDebugLogger consoleWriter = new ConsoleDebugLogger();
+        private GeneratorSettings settings = new GeneratorSettings();
+
         private List<GeneratedClass> generatedClasses;
         private SupportedTypes supportedTypes = new SupportedTypes();
 
@@ -23,25 +24,11 @@ namespace DtoClassGeneratorLibrary
 
         public DtoClassGenerator()
         {
-            int maxThreadCount = 0;
-            try
+            if (settings.MaxThreadsAmount != 0)
             {
-                maxThreadCount = Int32.Parse(ConfigurationManager.AppSettings["maxThreadAmount"]);
-                generatedClassNamespace = ConfigurationManager.AppSettings["generatedClassNamespace"];
+                ThreadPool.SetMinThreads(settings.MaxThreadsAmount, settings.MaxThreadsAmount);
+                ThreadPool.SetMaxThreads(settings.MaxThreadsAmount, settings.MaxThreadsAmount);
             }
-            catch
-            {
-                if (generatedClassNamespace == String.Empty)
-                {
-                    generatedClassNamespace = "DefaultNamespace";
-                }
-            }
-            if (maxThreadCount != 0)
-            {
-                ThreadPool.SetMinThreads(maxThreadCount, maxThreadCount);
-                ThreadPool.SetMaxThreads(maxThreadCount, maxThreadCount);
-            }
-
         }
 
         public List<GeneratedClass> Generate(ClassDescription[] classes)
@@ -98,7 +85,7 @@ namespace DtoClassGeneratorLibrary
 
             var generatedClassBody = generator.ClassDeclaration(classDescription.ClassName, accessibility: Accessibility.Public,modifiers: DeclarationModifiers.Sealed, members: classMembers);
 
-            var namespaceNode = generator.NamespaceDeclaration(generator.IdentifierName(generatedClassNamespace), generatedClassBody);
+            var namespaceNode = generator.NamespaceDeclaration(generator.IdentifierName(settings.GeneratedClassNamespace), generatedClassBody);
 
             var compilationUnitNode = generator.CompilationUnit(namespaceNode);
             compilationUnitNode = Formatter.Format(compilationUnitNode, workspace);
