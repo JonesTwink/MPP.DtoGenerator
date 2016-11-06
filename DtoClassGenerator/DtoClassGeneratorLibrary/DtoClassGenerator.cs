@@ -17,7 +17,7 @@ namespace DtoClassGeneratorLibrary
         private string generatedClassNamespace;
         private List<GeneratedClass> generatedClasses;
         private SupportedTypes supportedTypes = new SupportedTypes();
-
+        private object SyncObj = new object();
         public DtoClassGenerator()
         {
             int maxThreadCount = 0;
@@ -95,8 +95,8 @@ namespace DtoClassGeneratorLibrary
 
             var generatedClass = new GeneratedClass(classDescription.ClassName, compilationUnitNode.ToString());
 
-            object syncObject = new object();
-            lock(syncObject)
+
+            lock(SyncObj)
             {
                 generatedClasses.Add(generatedClass);
             }
@@ -140,10 +140,10 @@ namespace DtoClassGeneratorLibrary
 
         private void PrintDebugInfo(bool isThreadPool = false)
         {
-            object SyncObj = new object();
+            
             lock (SyncObj)
             {
-                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.ForegroundColor = ConsoleColor.DarkGray;
 
                 if (!isThreadPool)
                 {
@@ -152,7 +152,7 @@ namespace DtoClassGeneratorLibrary
                     ThreadPool.GetMaxThreads(out nWorkerThreads, out nCompletionThreads);
                     Console.WriteLine("Total amount of threads available: {0}\nThe amount of IO-threads available: {1}", nWorkerThreads, nCompletionThreads);
 
-                    Console.WriteLine("Main thread. Is pool thread: {0}, Hash: {1}", Thread.CurrentThread.IsThreadPoolThread, Thread.CurrentThread.GetHashCode());
+                    Console.WriteLine("Main thread. Is pool thread: {0}, Thread #: {1}", Thread.CurrentThread.IsThreadPoolThread, Thread.CurrentThread.GetHashCode());
                 }
                 else
                 {
