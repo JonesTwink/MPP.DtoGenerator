@@ -138,7 +138,8 @@ namespace DtoClassGeneratorLibrary
 
         private SyntaxNode GenerateProperty(PropertyDescription propertyDescription)
         {
-            object type = Type.GetType(propertyDescription.Format);
+            CheckForEmptyFields(propertyDescription);
+
             try
             {
                 var generatedProperty = PropertyDeclaration(IdentifierName(ConvertType(propertyDescription)), propertyDescription.Name)
@@ -147,12 +148,22 @@ namespace DtoClassGeneratorLibrary
                                                                                  AccessorDeclaration(SyntaxKind.SetAccessorDeclaration).WithSemicolonToken(Token(SyntaxKind.SemicolonToken)) })));
                 return generatedProperty;
             }
-            catch
+            catch(KeyNotFoundException)
             {
                 throw new DtoClassGeneratorLibraryException(String.Format("Type {0} is  not supported. Check your input file.", propertyDescription.Format));
             }
-            
-            
+
+        }
+        private void CheckForEmptyFields(PropertyDescription propertyDescription)
+        {
+            if (propertyDescription.Name == null)
+                throw new DtoClassGeneratorLibraryException(String.Format("Name field is missing. Check your input file."));
+
+            if (propertyDescription.Format == null)
+                throw new DtoClassGeneratorLibraryException(String.Format("Property '{0}' is missing it's format field. Check your input file.", propertyDescription.Name));
+
+            if (propertyDescription.Type == null)
+                throw new DtoClassGeneratorLibraryException(String.Format("Property '{0}' is missing it's type field. Check your input file.", propertyDescription.Name));
         }
 
         private string ConvertType(PropertyDescription propertyDescription)
